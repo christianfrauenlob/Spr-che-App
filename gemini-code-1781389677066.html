@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Sprüche 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--col:#1F3864;--bg:#f4f6fb;--card:#fff;--text:#111;--sub:#666;--border:#dde;--rep:#44546A;--gold:#8B6914}
+body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  overflow-x:hidden;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Topbar ── */
+#topbar{position:sticky;top:0;z-index:100;background:var(--col);color:#fff;
+  padding:8px 14px 4px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#tb-row{display:flex;align-items:center;gap:10px}
+#wn-block{display:flex;flex-direction:column;align-items:center;
+  background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;min-width:46px;flex-shrink:0}
+#wn-big{font-size:1.5rem;font-weight:700;line-height:1.1}
+#wn-lbl{font-size:.62rem;opacity:.65;text-transform:uppercase;letter-spacing:.06em}
+#tb-meta{flex:1;min-width:0}
+#tb-short{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tb-date{font-size:.67rem;opacity:.55;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tb-leitvers{font-size:.67rem;opacity:.55;font-style:italic;
+  padding:3px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:center}
+#nav-btns{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;
+  border-radius:7px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nav-btn:active{background:rgba(255,255,255,.3)}
+
+/* Steuerungsbuttons im Topbar */
+.speak-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:32px;
+  border-radius:7px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.speak-btn:active{background:rgba(255,255,255,.4)}
+.speak-btn.playing{background:#4cd964;animation:pulseSpeak 2s infinite}
+
+/* Button für Geschwindigkeit & Loop */
+.rate-btn, .loop-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:0 8px;height:32px;
+  border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:44px;transition:background 0.2s}
+.rate-btn:active, .loop-btn:active{background:rgba(255,255,255,.3)}
+.loop-btn.active{background:#4cd964;color:#fff}
+
+@keyframes pulseSpeak {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+#progress{height:2px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden;margin-top:5px}
+#progress-bar{height:100%;background:rgba(255,255,255,.7);transition:width .3s}
+
+/* ── Modebar / dots / hint ── */
+#modebar{display:flex;background:#fff;border-bottom:1px solid var(--border);
+  position:sticky;top:94px;z-index:99}
+.mode-btn{flex:1;padding:9px 2px;border:none;background:none;font-size:.76rem;
+  color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;line-height:1.2}
+.mode-btn.active{color:var(--col);border-bottom-color:var(--col);font-weight:600}
+#dots{display:flex;justify-content:center;gap:5px;padding:7px 0 3px;
+  background:#fff;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:background .2s}
+.dot.active{background:var(--col)}.dot.rep{background:#c8c8c8}
+.dot.vorsatz{background:var(--gold)}
+.dot.cur-week{box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--col)}
+#mode-hint{padding:6px 14px;font-size:.74rem;color:var(--sub);
+  background:#fff;border-bottom:1px solid var(--border)}
+
+/* ── Slider / slides ── */
+#slider{flex:1;overflow:hidden;position:relative}
+#slides{display:flex;transition:transform .3s cubic-bezier(.4,0,.2,1);height:100%}
+.slide{min-width:100vw;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+
+/* ── Vorsatz slide ── */
+.vorsatz-slide{min-width:100vw;overflow-y:auto;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#5a4010 0%,#8B6914 55%,#a07820 100%);min-height:100%}
+.vorsatz-title{font-size:1.4rem;font-weight:700;color:#fff;text-align:center;
+  letter-spacing:.02em;margin-bottom:4px;padding:0 24px}
+.vorsatz-subtitle{font-size:.85rem;color:rgba(255,255,255,.6);text-align:center;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:36px}
+.vorsatz-ref{font-size:.85rem;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.1em;margin-bottom:12px;text-align:center}
+.vorsatz-text{font-size:1.15rem;line-height:1.75;color:#fff;text-align:center;
+  font-style:italic;max-width:300px;padding:0 24px}
+
+/* ── Verse cards ── */
+.vcard{background:#fff;border-radius:11px;box-shadow:0 1px 4px rgba(0,0,0,.07);
+  overflow:hidden;border-left:4px solid var(--col);cursor:pointer;transition:transform .12s,box-shadow .15s}
+.vcard:active{box-shadow:0 2px 10px rgba(0,0,0,.14);transform:scale(.985)}
+.vcard-inner{padding:10px 13px 12px}
+.vcard-ref{font-size:.72rem;font-weight:700;letter-spacing:.07em;color:var(--col);
+  text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.vcard-badge{font-size:.64rem;opacity:.4;font-weight:400}
+.vcard-text{font-size:1rem;line-height:1.65;color:var(--text)}
+.anker-hide{color:#c5c9d4;letter-spacing:.07em}
+.einstieg-hide{display:inline-block;background:#e5e9f4;border-radius:3px;color:transparent;
+  min-width:2ch;user-select:none}
+.rep-card{background:var(--rep);color:#fff;border-radius:11px;padding:22px 18px;text-align:center}
+.rep-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.rep-sub{font-size:.88rem;opacity:.75;margin-bottom:10px}
+.rep-hint{font-size:.78rem;opacity:.5;line-height:1.5}
+
+/* ── Commentary sheet ── */
+#ks{position:fixed;inset:0;z-index:200;pointer-events:none;opacity:0;transition:opacity .25s;display:flex;flex-direction:column}
+#ks.open{pointer-events:all;opacity:1}
+#ks-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+#ks-panel{position:absolute;bottom:0;left:0;right:0;max-height:92vh;display:flex;flex-direction:column;
+  background:#fff;border-radius:18px 18px 0 0;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#ks.open #ks-panel{transform:translateY(0)}
+#ks-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:10px auto 4px}
+#ks-header{padding:0 16px 12px;border-bottom:1px solid #eee}
+#ks-hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+#ks-ref-box{display:flex;align-items:center;gap:8px}
+#ks-ref{font-size:1rem;font-weight:700;letter-spacing:.05em}
+
+/* Mediensteuerungs-Button im Kommentar */
+.ks-speak-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:2px;line-height:1}
+
+#ks-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;
+  padding:2px 4px;line-height:1;border-radius:6px;flex-shrink:0}
+#ks-close:active{background:#f0f0f0}
+#ks-verse{font-size:.86rem;color:#555;margin-top:5px;font-style:italic;line-height:1.5}
+#ks-body{overflow-y:auto;padding:16px;flex:1;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#ks-komm{font-size:.97rem;line-height:1.78;color:#222;white-space:pre-wrap}
+.fn-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;
+  padding:10px 0;border-top:1px solid #eee;margin-top:12px;user-select:none}
+.fn-toggle-icon{width:20px;height:20px;border-radius:50%;background:var(--col);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s}
+.fn-toggle-icon svg{fill:#fff}
+.fn-toggle.open .fn-toggle-icon{transform:rotate(90deg)}
+.fn-toggle-label{font-size:.8rem;font-weight:600;color:var(--col)}
+.fn-toggle-count{font-size:.72rem;color:#999;margin-left:auto}
+.fn-list{display:none;flex-direction:column;gap:8px;padding-bottom:4px}
+.fn-list.open{display:flex}
+.fn-item{background:#f7f8fc;border-radius:8px;padding:10px 12px;border-left:3px solid var(--col)}
+.fn-nr{font-size:.68rem;font-weight:700;color:var(--col);letter-spacing:.04em;margin-bottom:4px}
+.fn-text{font-size:.86rem;line-height:1.6;color:#2a2a2a}
+#ks-footer{padding:12px 16px 16px;border-top:1px solid #eee}
+#ks-back{width:100%;padding:13px;background:var(--col);color:#fff;border:none;
+  border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+#ks-back:active{opacity:.85}
+#ks-src{font-size:.65rem;color:#bbb;text-align:center;margin-top:6px}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div id="tb-row">
+    <div id="wn-block"><div id="wn-big">1</div><div id="wn-lbl">Woche</div></div>
+    <div id="tb-meta">
+      <div id="tb-short"></div>
+      <div id="tb-date"></div>
+    </div>
+    <div id="nav-btns">
+      <button class="loop-btn" id="loop-toggle-btn" onclick="toggleLoop()" title="Dauerschleife an/aus">🔁</button>
+      <button class="rate-btn" id="rate-toggle-btn" onclick="toggleSpeed()" title="Geschwindigkeit ändern">1.0x</button>
+      <button class="speak-btn" id="main-speak-btn" onclick="toggleWocheVorlesen()" title="Verse vorlesen / pausieren">🔊</button>
+      <button class="nav-btn" onclick="nav(-1)">&#8592;</button>
+      <button class="nav-btn" onclick="nav(1)">&#8594;</button>
+    </div>
+  </div>
+  <div id="tb-leitvers"></div>
+  <div id="progress"><div id="progress-bar"></div></div>
+</div>
+<div id="modebar">
+  <button class="mode-btn active" onclick="setMode(0)">📖 Volltext</button>
+  <button class="mode-btn"        onclick="setMode(1)">🔍 Einstieg</button>
+  <button class="mode-btn"        onclick="setMode(2)">⚓ Anker</button>
+</div>
+<div id="dots"></div>
+<div id="mode-hint">Vers antippen → Kommentar lesen</div>
+<div id="slider"><div id="slides"></div></div>
+<div id="ks" onclick="bgClick(event)">
+  <div id="ks-bg"></div>
+  <div id="ks-panel">
+    <div id="ks-handle"></div>
+    <div id="ks-header">
+      <div id="ks-hrow">
+        <div>
+          <div id="ks-ref-box">
+            <div id="ks-ref"></div>
+            <button class="ks-speak-btn" id="ks-speak-btn" onclick="toggleEinzelVersVorlesen()" title="Vers vorlesen / pausieren">🔊</button>
+          </div>
+          <div id="ks-verse"></div>
+        </div>
+        <button id="ks-close" onclick="closeKS()">&#x2715;</button>
+      </div>
+    </div>
+    <div id="ks-body">
+      <div id="ks-komm"></div>
+      <div id="ks-fn-area"></div>
+    </div>
+    <div id="ks-footer">
+      <button id="ks-back" onclick="closeKS()">← Zurück zum Lernplan</button>
+      <div id="ks-src"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// === HIER DEINE KOMPLETTE ORIGINAL-DATENBANK ERNEUT EINFÜGEN ===
+
+const WEEKS = [
+  {"wn": 0, "typ": "V", "zeitraum": "", "short": "Vorsatz", "thema": "Zur Eröffnung", "block": "", "color": "#8B6914", "verse": [{"ref": "8,35", "text": "Denn wer mich findet, hat das Leben gefunden und Wohlgefallen erlangt von dem HERRN.", "optional": false}], "date_start": null, "date_end": null},
+  {"wn": 1, "typ": "L", "zeitraum": "31.05.2026 – 06.06.2026", "date_start": "2026-05-31", "date_end": "2026-06-06", "short": "Aufbruch in die Weisheit", "thema": "Fundament der Weisheit I – Anfang und Suchen", "verse": [{"ref": "1,7", "text": "Die Furcht des HERRN ist der Anfang der Erkenntnis; die Narren verachten Weisheit und Unterweisung.", "optional": false}, {"ref": "2,1", "text": "Mein Sohn, wenn du meine Reden annimmst und meine Gebote bei dir verwahrst,", "optional": false}, {"ref": "2,2", "text": "so dass du dein Ohr aufmerksam auf Weisheit hören lässt, dein Herz neigst zum Verständnis;", "optional": false}, {"ref": "2,3", "text": "ja, wenn du den Verstand anrufst, deine Stimme erhebst zum Verständnis,", "optional": false}, {"ref": "2,4", "text": "wenn du ihn suchst wie Silber und ihm nachspürst wie nach verborgenen Schätzen,", "optional": false}, {"ref": "2,5", "text": "dann wirst du die Furcht des HERRN verstehen und die Erkenntnis Gottes finden.", "optional": false}], "color": "#1F3864", "block": "Block I – Fundament & Gottesbeziehung"}
+];
+
+const KOMM = {
+  "Spr 1,7": {"k": "Die Furcht des HERRN...", "f": []}
+};
+
+// ============================================================================
+
+// ── Globale Variablen & Präzise Sprachsteuerung ──
+let idx=0, mode=0;
+let currentSpeechRate = 1.0; 
+let isLoopActive = false; // Status für die Dauerschleife
+
+let ttsQueue = [];
+let ttsCurrentIndex = 0;
+let isPlayingTTS = false;
+let currentActiveButtonId = null;
+
+function toggleSpeed() {
+    const btn = document.getElementById('rate-toggle-btn');
+    if (currentSpeechRate === 1.0) {
+        currentSpeechRate = 0.5;
+        btn.innerText = '0.5x';
+    } else {
+        currentSpeechRate = 1.0;
+        btn.innerText = '1.0x';
+    }
+    if (isPlayingTTS) {
+        continuePlayback();
+    }
+}
+
+// Aktiviert/Deaktiviert die Dauerschleife
+function toggleLoop() {
+    const btn = document.getElementById('loop-toggle-btn');
+    isLoopActive = !isLoopActive;
+    if (isLoopActive) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
+}
+
+function getGermanMaleVoice() {
+    const voices = window.speechSynthesis.getVoices();
+    return voices.find(v => v.lang.startsWith('de') && 
+        (v.name.toLowerCase().includes('stefan') || 
+         v.name.toLowerCase().includes('male') || 
+         v.name.toLowerCase().includes('männlich') || 
+         v.name.toLowerCase().includes('christoph') || 
+         v.name.toLowerCase().includes('yannick') ||
+         v.name.toLowerCase().includes('jonas'))
+    ) || voices.find(v => v.lang.startsWith('de'));
+}
+
+function playNextSentence() {
+    if (!isPlayingTTS) return;
+
+    // Wenn das Ende erreicht ist
+    if (ttsCurrentIndex >= ttsQueue.length) {
+        if (isLoopActive && currentActiveButtonId === 'main-speak-btn') {
+            // Dauerschleife greift: Index zurücksetzen und von vorn beginnen
+            ttsCurrentIndex = 0;
+        } else {
+            stopAudioCompletely();
+            return;
+        }
+    }
+
+    window.speechSynthesis.cancel();
+    
+    let text = ttsQueue[ttsCurrentIndex];
+    let saubererText = text.replace(/\s*\([^\)]+\)\s*$/g, "").trim();
+    
+    let utterance = new SpeechSynthesisUtterance(saubererText);
+    utterance.lang = 'de-DE';
+    utterance.rate = currentSpeechRate;
+    
+    const maleVoice = getGermanMaleVoice();
+    if (maleVoice) utterance.voice = maleVoice;
+
+    utterance.onend = () => {
+        if (isPlayingTTS) {
+            ttsCurrentIndex++;
+            playNextSentence();
+        }
+    };
+
+    utterance.onerror = () => {
+        stopAudioCompletely();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function continuePlayback() {
+    isPlayingTTS = true;
+    setButtonState(currentActiveButtonId, true);
+    playNextSentence();
+}
+
+function pausePlayback() {
+    isPlayingTTS = false;
+    window.speechSynthesis.cancel();
+    setButtonState(currentActiveButtonId, false, true);
+}
+
+function startNewPlayback(sentencesList, buttonId) {
+    stopAudioCompletely();
+    ttsQueue = sentencesList;
+    ttsCurrentIndex = 0;
+    currentActiveButtonId = buttonId;
+    isPlayingTTS = true;
+    setButtonState(buttonId, true);
+    playNextSentence();
+}
+
+function setButtonState(buttonId, isPlaying, isPaused = false) {
+    const btn = document.getElementById(buttonId);
+    if (!btn) return;
+    if (isPlaying && !isPaused) {
+        btn.innerText = '⏸';
+        btn.classList.add('playing');
+    } else {
+        btn.innerText = '🔊';
+        btn.classList.remove('playing');
+    }
+}
+
+function stopAudioCompletely() {
+    isPlayingTTS = false;
+    window.speechSynthesis.cancel();
+    setButtonState('main-speak-btn', false);
+    setButtonState('ks-speak-btn', false);
+    ttsQueue = [];
+    ttsCurrentIndex = 0;
+    currentActiveButtonId = null;
+}
+
+function toggleWocheVorlesen() {
+    if (currentActiveButtonId === 'main-speak-btn') {
+        if (isPlayingTTS) pausePlayback();
+        else continuePlayback();
+        return;
+    }
+
+    const w = WEEKS[idx];
+    if (!w || !w.verse) return;
+    
+    let list = [];
+    w.verse.forEach((v) => { if(v.text) list.push(v.text); });
+    
+    if (list.length === 0) return;
+    startNewPlayback(list, 'main-speak-btn');
+}
+
+function toggleEinzelVersVorlesen() {
+    if (currentActiveButtonId === 'ks-speak-btn') {
+        if (isPlayingTTS) pausePlayback();
+        else continuePlayback();
+        return;
+    }
+
+    const textEl = document.getElementById('ks-verse');
+    if (textEl && textEl.innerText.trim() !== "") {
+        startNewPlayback([textEl.innerText.trim()], 'ks-speak-btn');
+    }
+}
+
+if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = () => getGermanMaleVoice();
+}
+
+
+// ── Standard-App-Logik (unverändert) ──
+function init(){
+  determineCurrentWeek();
+  buildDots();
+  showWeek();
+  window.addEventListener('resize',updateSliderPosition);
+}
+
+function determineCurrentWeek(){
+  const n=new Date().toISOString().split('T')[0];
+  for(let i=0;i<WEEKS.length;i++){
+    const w=WEEKS[i];
+    if(w.date_start&&w.date_end&&n>=w.date_start&&n<=w.date_end){idx=i;return;}
+  }
+  idx=0;
+}
+
+function buildDots(){
+  const container=document.getElementById('dots');
+  container.innerHTML='';
+  WEEKS.forEach((w,i)=>{
+    const d=document.createElement('div');
+    d.className='dot';
+    if(w.typ==='V') d.classList.add('vorsatz');
+    if(w.typ==='R') d.classList.add('rep');
+    if(i===idx) d.classList.add('active');
+    d.onclick=()=>{idx=i;showWeek();};
+    container.appendChild(d);
+  });
+}
+
+function updateDots(){
+  const dots=document.querySelectorAll('#dots .dot');
+  dots.forEach((d,i)=>{
+    if(i===idx) d.classList.add('active'); else d.classList.remove('active');
+  });
+}
+
+function showWeek(){
+  updateDots();
+  const w=WEEKS[idx];
+  document.getElementById('wn-big').innerText=w.wn;
+  document.getElementById('tb-short').innerText=w.short;
+  document.getElementById('tb-date').innerText=w.zeitraum||w.thema;
+  
+  let lv="";
+  if(w.verse&&w.verse.length>0) lv="Leitvers: Spr "+w.verse[0].ref;
+  else if(w.sub) lv=w.sub;
+  document.getElementById('tb-leitvers').innerText=lv;
+  
+  const pb=document.getElementById('progress-bar');
+  pb.style.width=((idx+1)/WEEKS.length*100)+'%';
+  
+  const sContainer=document.getElementById('slides');
+  sContainer.innerHTML='';
+  
+  WEEKS.forEach((wk,wi)=>{
+    const s=document.createElement('div');
+    s.className='slide';
+    if(wk.typ==='V'){
+      s.className='vorsatz-slide';
+      const v0=wk.verse[0];
+      s.innerHTML=`
+        <div class="vorsatz-title">${wk.thema}</div>
+        <div class="vorsatz-subtitle">Sprüche 2026</div>
+        <div class="vorsatz-ref">SPRÜCHE ${v0.ref}</div>
+        <div class="vorsatz-text">„${v0.text}“</div>
+      `;
+      s.onclick=()=>openKS("Spr "+v0.ref,v0.text);
+    } else if(wk.typ==='R'){
+      s.innerHTML=`
+        <div class="rep-card">
+          <div class="rep-title">${wk.label}</div>
+          <div class="rep-sub">${wk.sub}</div>
+          <div class="rep-hint">Nutze diese Woche, um alle bisherigen Verse zu wiederholen und zu festigen.</div>
+        </div>
+      `;
+    } else {
+      wk.verse.forEach(v=>{
+        const card=document.createElement('div');
+        card.className='vcard';
+        card.style.borderLeftColor=wk.color||'var(--col)';
+        
+        let btxt=renderVerseText(v.text);
+        let badge=v.optional?'<span class="vcard-badge">(optional)</span>':'';
+        
+        card.innerHTML=`
+          <div class="vcard-inner">
+            <div class="vcard-ref" style="color:${wk.color||'var(--col)'}">Spr ${v.ref} ${badge}</div>
+            <div class="vcard-text">${btxt}</div>
+          </div>
+        `;
+        card.onclick=()=>openKS("Spr "+v.ref,v.text);
+        s.appendChild(card);
+      });
+    }
+    sContainer.appendChild(s);
+  });
+  
+  updateSliderPosition();
+}
+
+function renderVerseText(t){
+  if(mode===0) return t;
+  let words=t.split(' ');
+  if(mode===1){
+    return words.map((w,i)=>i<2?w:`<span class="einstieg-hide">${w}</span>`).join(' ');
+  }
+  if(mode===2){
+    return words.map((w,i)=>{
+      if(i<2) return w;
+      let f=w.charAt(0);
+      let r=w.slice(1).replace(/[a-zA-ZäöüÄÖÜß]/g,'_');
+      return f+`<span class="anker-hide">${r}</span>`;
+    }).join(' ');
+  }
+  return t;
+}
+
+function updateSliderPosition(){
+  const sContainer=document.getElementById('slides');
+  sContainer.style.transform='translateX(-'+(idx*100)+'vw)';
+}
+
+function nav(d){
+  stopAudioCompletely();
+  idx+=d;
+  if(idx<0) idx=WEEKS.length-1;
+  if(idx>=WEEKS.length) idx=0;
+  showWeek();
+}
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>{
+    if(i===m) b.classList.add('active'); else b.classList.remove('active');
+  });
+  showWeek();
+}
+
+function openKS(ref,vtxt){
+  stopAudioCompletely();
+  
+  document.getElementById('ks-ref').innerText=ref;
+  document.getElementById('ks-verse').innerText=vtxt;
+  
+  const kObj=KOMM[ref];
+  const kText=kObj?kObj.k:"Kein Kommentar vorhanden.";
+  document.getElementById('ks-komm').innerText=kText;
+  
+  const fnArea=document.getElementById('ks-fn-area');
+  fnArea.innerHTML='';
+  
+  if(kObj&&kObj.f&&kObj.f.length>0){
+    const toggle=document.createElement('div');
+    toggle.className='fn-toggle';
+    toggle.innerHTML=`
+      <div class="fn-toggle-icon"><svg viewBox="0 0 24 24" width="12" height="12"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></div>
+      <div class="fn-toggle-label">Fussnoten / Anmerkungen</div>
+      <div class="fn-toggle-count">${kObj.f.length}</div>
+    `;
+    const fList=document.createElement('div');
+    fList.className='fn-list';
+    kObj.f.forEach(f=>{
+      const fItem=document.createElement('div');
+      fItem.className='fn-item';
+      fItem.innerHTML=`<div class="fn-nr">Fussnote ${f.n}</div><div class="fn-text">${f.t}</div>`;
+      fList.appendChild(fItem);
+    });
+    toggle.onclick=()=>{
+      toggle.classList.toggle('open');
+      fList.classList.toggle('open');
+    };
+    fnArea.appendChild(toggle);
+    fnArea.appendChild(fList);
+  }
+  
+  const ks=document.getElementById('ks');
+  ks.style.display='flex';
+  setTimeout(()=>{ks.classList.add('open');},10);
+}
+
+function closeKS(){
+  stopAudioCompletely();
+  const ks=document.getElementById('ks');
+  ks.classList.remove('open');
+  setTimeout(()=>{ks.style.display='none';},250);
+}
+
+function bgClick(e){
+  if(e.target.id==='ks'||e.target.id==='ks-bg') closeKS();
+}
+
+// ── Touch / Swipe Gesten Steuerungen ──
+let sx=0,sy=0,pdY=0,pdDrag=false;
+const pnl=document.getElementById('ks-panel');
+pnl.addEventListener('touchstart',function(e){
+  if(document.getElementById('ks-body').scrollTop>0) return;
+  pdY=e.touches[0].clientY;pdDrag=true;
+},{passive:true});
+pnl.addEventListener('touchmove',function(e){
+  if(!pdDrag)return;
+  const dy=e.touches[0].clientY-pdY;
+  if(dy>0)pnl.style.transform='translateY('+dy+'px)';
+},{passive:true});
+pnl.addEventListener('touchend',function(e){
+  if(!pdDrag)return;pdDrag=false;
+  const dy=e.changedTouches[0].clientY-pdY;
+  pnl.style.transform='';
+  if(dy>80)closeKS();
+},{passive:true});
+
+const sldr=document.getElementById('slider');
+sldr.addEventListener('touchstart',function(e){
+  if(document.getElementById('ks').classList.contains('open'))return;
+  sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+},{passive:true});
+sldr.addEventListener('touchmove',function(e){
+  if(document.getElementById('ks').classList.contains('open'))return;
+  if(Math.abs(e.touches[0].clientX-sx)>Math.abs(e.touches[0].clientY-sy)&&Math.abs(e.touches[0].clientX-sx)>10)e.preventDefault();
+},{passive:false});
+sldr.addEventListener('touchend',function(e){
+  if(document.getElementById('ks').classList.contains('open'))return;
+  const dx=sx-e.changedTouches[0].clientX,dy=Math.abs(e.changedTouches[0].clientY-sy);
+  if(Math.abs(dx)>50&&dy<80)nav(dx>0?1:-1);
+},{passive:true});
+
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('ks').classList.contains('open')){
+    if(e.key==='Escape')closeKS();
+  }else{
+    if(e.key==='ArrowLeft')nav(-1);
+    if(e.key==='ArrowRight')nav(1);
+  }
+});
+
+window.onload=init;
+</script>
+</body>
+</html>
